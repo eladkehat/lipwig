@@ -44,7 +44,7 @@ Resources:
                 Resource: !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*'
               - Effect: Allow
                 Action: 'ssm:DescribeParameters'
-                Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:*'
+                Resource: '*'
               - Effect: Allow
                 Action:
                   - 'ssm:GetParameter'
