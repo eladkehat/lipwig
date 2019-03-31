@@ -10,7 +10,7 @@
         "TopicArn": "arn:aws:sns:us-east-1:123456789012:ExampleTopic",
         "Subject": "example subject",
         "Message": "{\"Key1\":\"Value1\",\"Key2\":{\"Subkey21\":\"Value21\",\"Subkey22\":22}}",
-        "Timestamp": "1970-01-01T00:00:00.000Z",
+        "Timestamp": "2019-03-31T15:12:23.345Z",
         "SignatureVersion": "1",
         "Signature": "EXAMPLE",
         "SigningCertUrl": "EXAMPLE",

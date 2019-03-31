@@ -14,29 +14,31 @@ def slack_token(monkeypatch):
 
 @pytest.fixture
 def expected_header():
-    return 'New message on topic "ExampleTopic" received at 1970-01-01T00:00:00.000Z\nSubject: **example subject**'
+    return 'New message on topic "ExampleTopic" received at 2019-03-31T15:12:23.345Z\nSubject: *example subject*'
 
 
 @pytest.fixture
-def expected_attributes():
-    return '''```json
+def expected_message():
+    return '''*Message:*
+```
 {
-  "Test": {
-    "Type": "String",
-    "Value": "TestString"
+  "Key1": "Value1",
+  "Key2": {
+    "Subkey21": "Value21",
+    "Subkey22": 22
   }
 }
 ```'''
 
 
 @pytest.fixture
-def expected_message():
-    return '''```json
+def expected_attributes():
+    return '''*Attributes:*
+```
 {
-  "Key1": "Value1",
-  "Key2": {
-    "Subkey21": "Value21",
-    "Subkey22": 22
+  "Test": {
+    "Type": "String",
+    "Value": "TestString"
   }
 }
 ```'''
@@ -52,32 +54,38 @@ def test_text_message_event_to_slack_message_blocks(expected_header, expected_at
     from lipwig import slack
     sns_event = load_sns_event('text_message')
     sections = slack.event_to_slack_message_blocks(sns_event)
-    assert len(sections) == 3
-    assert all([section['type'] == 'section' and section['text']['type'] == 'mrkdwn' for section in sections])
+    assert len(sections) == 5
+    assert all([section['type'] == 'section' and section['text']['type'] == 'mrkdwn'
+                for i, section in enumerate(sections) if i % 2 == 0])
+    assert all([section == {'type': 'divider'} for i, section in enumerate(sections) if i % 2])
     assert sections[0]['text']['text'] == expected_header
-    assert sections[1]['text']['text'] == expected_attributes
-    assert sections[2]['text']['text'] == 'example message'
+    assert sections[2]['text']['text'] == '*Message:*\nexample message'
+    assert sections[4]['text']['text'] == expected_attributes
 
 
 def test_json_message_without_attributes_event_to_slack_message_blocks(expected_header, expected_message):
     from lipwig import slack
     sns_event = load_sns_event('json_message_without_attributes')
     sections = slack.event_to_slack_message_blocks(sns_event)
-    assert len(sections) == 2
-    assert all([section['type'] == 'section' and section['text']['type'] == 'mrkdwn' for section in sections])
+    assert len(sections) == 3
+    assert all([section['type'] == 'section' and section['text']['type'] == 'mrkdwn'
+                for i, section in enumerate(sections) if i % 2 == 0])
+    assert all([section == {'type': 'divider'} for i, section in enumerate(sections) if i % 2])
     assert sections[0]['text']['text'] == expected_header
-    assert sections[1]['text']['text'] == expected_message
+    assert sections[2]['text']['text'] == expected_message
 
 
 def test_json_message_without_subjet_event_to_slack_message_blocks(expected_attributes, expected_message):
     from lipwig import slack
     sns_event = load_sns_event('json_message_without_subject')
     sections = slack.event_to_slack_message_blocks(sns_event)
-    assert len(sections) == 3
-    assert all([section['type'] == 'section' and section['text']['type'] == 'mrkdwn' for section in sections])
-    assert sections[0]['text']['text'] == 'New message on topic "ExampleTopic" received at 1970-01-01T00:00:00.000Z'
-    assert sections[1]['text']['text'] == expected_attributes
+    assert len(sections) == 5
+    assert all([section['type'] == 'section' and section['text']['type'] == 'mrkdwn'
+                for i, section in enumerate(sections) if i % 2 == 0])
+    assert all([section == {'type': 'divider'} for i, section in enumerate(sections) if i % 2])
+    assert sections[0]['text']['text'] == 'New message on topic "ExampleTopic" received at 2019-03-31T15:12:23.345Z'
     assert sections[2]['text']['text'] == expected_message
+    assert sections[4]['text']['text'] == expected_attributes
 
 
 def test_post_message_successfully():

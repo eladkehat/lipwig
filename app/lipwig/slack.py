@@ -8,7 +8,7 @@ See `lipwig.tokens` for more information.
 import json
 import logging
 import os
-from typing import Any, List
+from typing import Any, Dict, List
 
 import slackclient
 
@@ -26,7 +26,11 @@ def lambda_handler(event: dict, context: Any) -> None:
     post_message(event_to_slack_message_blocks(sns_event))
 
 
-def event_to_slack_message_blocks(sns_event: dict) -> List[dict]:
+Blocks = List[Dict[str, Any]]
+"""A type alias for the message blocks returned by the `event_to_slack_message_blocks`."""
+
+
+def event_to_slack_message_blocks(sns_event: dict) -> Blocks:
     """Constructs a Slack message from the SNS event.
 
     The message is layed out in Slack blocks format, using markdown.
@@ -42,28 +46,30 @@ def event_to_slack_message_blocks(sns_event: dict) -> List[dict]:
         A list of message block sections.
     """
     def add_section(text):
+        if sections:
+            sections.append({'type': 'divider'})
         sections.append({
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
                 'text': text}})
 
-    sections = []
+    sections: Blocks = []
     # Header
     topic = sns_event['TopicArn'].split(':')[-1]  # The topic name
     text = f'New message on topic "{topic}" received at {sns_event["Timestamp"]}'
     if sns_event['Subject']:
-        text += f'\nSubject: **{sns_event["Subject"]}**'
+        text += f'\nSubject: *{sns_event["Subject"]}*'
     add_section(text)
-    # Attributes (if any)
-    if 'MessageAttributes' in sns_event:
-        add_section(f'```json\n{json.dumps(sns_event["MessageAttributes"], indent=2)}\n```')
     # The message itself
     try:
         message = json.loads(sns_event['Message'])
-        add_section(f'```json\n{json.dumps(message, indent=2)}\n```')
+        add_section(f'*Message:*\n```\n{json.dumps(message, indent=2)}\n```')
     except ValueError:  # The message is not JSON - probably a string.
-        add_section(sns_event['Message'])
+        add_section(f'*Message:*\n{sns_event["Message"]}')
+    # Attributes (if any)
+    if 'MessageAttributes' in sns_event:
+        add_section(f'*Attributes:*\n```\n{json.dumps(sns_event["MessageAttributes"], indent=2)}\n```')
     return sections
 
 
