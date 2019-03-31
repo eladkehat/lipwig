@@ -11,8 +11,17 @@ For example, a dead letter queue topic lets publish events that your lambda func
 But what if you want a person or team of people to know of the message? Out of the box, SNS only supports email (slow),
 push messages to an app _that you own_, or SMS (not free).
 
-Lipwig provides a number of lambda functions that you can subscribe to an SNS topic in order to publish its events to
+Lipwig provides lambda functions that you can subscribe to an SNS topic in order to publish its events to
 additional services that you use.
+
+
+## Services
+
+### Slack
+
+1. Create a [Slack app](https://api.slack.com/apps).
+1. Give your app has the `chat:write:bot` [permission scope](https://api.slack.com/docs/oauth-scopes).
+1. Make the app's **OAuth access token** available to Lipwig.
 
 
 ## Why "Lipwig"?
