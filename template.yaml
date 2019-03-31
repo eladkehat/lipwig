@@ -1,0 +1,68 @@
+# SAM deployment template
+# Docs at: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#resource-types
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SAM template for Lipwig
+
+Globals:
+  Function:
+    Runtime: python3.7
+    Timeout: 5  # Allow time for posting to external services
+    Environment:
+      Variables:
+        LOG_LEVEL: INFO
+
+Resources:
+
+  LipwigFunctionExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: 2012-10-17
+      Policies:
+        - PolicyName: 'LipwigFunctionExecRolePolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'kms:Decrypt'
+                Resource: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/*'
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+              - Effect: Allow
+                Action: 'sns:Subscribe'
+                Resource: !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*'
+              - Effect: Allow
+                Action: 'ssm:DescribeParameters'
+                Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:*'
+              - Effect: Allow
+                Action:
+                  - 'ssm:GetParameter'
+                  - 'ssm:GetParameters'
+                Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/Lipwig/*'
+
+  SlackFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Post SNS events to Slack."
+      CodeUri: app/
+      Handler: lipwig.slack.lambda_handler
+      Role: !GetAtt LipwigFunctionExecRole.Arn
+
+
+# Outputs allow for easy access to generated resources through other applications and the CloudFormation console.
+Outputs:
+  LipwigFunctionExecRole:
+    Value: !GetAtt LipwigFunctionExecRole.Arn
+  SlackFunction:
+    Value: !GetAtt SlackFunction.Arn
