@@ -94,4 +94,5 @@ def post_message(message_blocks: List[dict]) -> bool:
         return True
     else:
         logger.error(f'Slack message failed with error: "{response["error"]}"')
+        logger.error(f'Original response:\n{json.dumps(response, indent=2)}')
         return False
