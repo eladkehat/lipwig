@@ -64,9 +64,13 @@ def event_to_slack_message_blocks(sns_event: dict) -> Blocks:
     # The message itself
     try:
         message = json.loads(sns_event['Message'])
-        add_section(f'*Message:*\n```\n{json.dumps(message, indent=2)}\n```')
+        payload = f'*Message:*\n```\n{json.dumps(message, indent=2)}\n```'
+        # The maximum length allowed by Slack is 3,000 characters
+        if len(payload) >= 3000:
+            payload = f'Message too long. Showing raw prefix:\n{sns_event["Message"][:2950]}'
+        add_section(payload)
     except ValueError:  # The message is not JSON - probably a string.
-        add_section(f'*Message:*\n{sns_event["Message"]}')
+        add_section(f'*Message:*\n{sns_event["Message"][:2950]}')
     # Attributes (if any)
     if 'MessageAttributes' in sns_event:
         add_section(f'*Attributes:*\n```\n{json.dumps(sns_event["MessageAttributes"], indent=2)}\n```')

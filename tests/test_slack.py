@@ -88,6 +88,28 @@ def test_json_message_without_subjet_event_to_slack_message_blocks(expected_attr
     assert sections[4]['text']['text'] == expected_attributes
 
 
+def test_long_text_message_event_to_slack_message_blocks():
+    from lipwig import slack
+    long_message = 'Hello, World!\n' * 1000
+    assert len(long_message) > 3000
+    sns_event = load_sns_event('text_message')
+    sns_event['Message'] = long_message
+    sections = slack.event_to_slack_message_blocks(sns_event)
+    assert len(sections[2]['text']['text']) < 3000
+    assert sections[2]['text']['text'].startswith('*Message:*')
+
+
+def test_long_json_message_event_to_slack_message_blocks():
+    from lipwig import slack
+    long_json = json.dumps(['Hello, World!'] * 1000)
+    assert len(long_json) > 3000
+    sns_event = load_sns_event('json_message_without_attributes')
+    sns_event['Message'] = long_json
+    sections = slack.event_to_slack_message_blocks(sns_event)
+    assert len(sections[2]['text']['text']) < 3000
+    assert sections[2]['text']['text'].startswith('Message too long. Showing raw prefix:')
+
+
 def test_post_message_successfully():
     from lipwig import slack
     sns_event = load_sns_event('text_message')
