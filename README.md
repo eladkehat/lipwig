@@ -57,3 +57,5 @@ The name is a reference to [Moist von Lipwig](https://en.wikipedia.org/wiki/Mois
 Postmaster General in Terry Pratchett's novel [Going Postal](https://en.wikipedia.org/wiki/Going_Postal).
 
 Lipwig can post message anywhere, just like the revitalized Ankh-Morpork postal service under von Lipwig.
+
+<span style="display:block;text-align:center">![Moist von Lipwig](https://upload.wikimedia.org/wikipedia/en/8/82/Making_Money_Lipwig.JPG)</span>
