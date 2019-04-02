@@ -8,6 +8,7 @@ Description: SAM template for Lipwig
 Globals:
   Function:
     Runtime: python3.7
+    CodeUri: app/
     Timeout: 5  # Allow time for posting to external services
     Environment:
       Variables:
@@ -51,18 +52,32 @@ Resources:
                   - 'ssm:GetParameters'
                 Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/Lipwig/*'
 
+  CloudWatchLogsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: 'Logs SNS events to CloudWatch.'
+      Handler: lipwig.cloud_watch_logs.lambda_handler
+      Role: !GetAtt LipwigFunctionExecRole.Arn
+
   SlackFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Description: "Post SNS events to Slack."
-      CodeUri: app/
+      Description: 'Posts SNS events to Slack.'
       Handler: lipwig.slack.lambda_handler
       Role: !GetAtt LipwigFunctionExecRole.Arn
 
 
-# Outputs allow for easy access to generated resources through other applications and the CloudFormation console.
+# Make Lipwig functions accessible to other stacks
 Outputs:
-  LipwigFunctionExecRole:
-    Value: !GetAtt LipwigFunctionExecRole.Arn
+
+  CloudWatchLogsFunction:
+    Description: 'Logs SNS events to CloudWatch.'
+    Value: !GetAtt CloudWatchLogsFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-CloudWatchLogsFunction'
+
   SlackFunction:
+    Description: 'Posts SNS events to Slack.'
     Value: !GetAtt SlackFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-SlackFunction'
