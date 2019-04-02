@@ -5,9 +5,11 @@ all: help
 help:
 	@echo "$(appname) commands:"
 	@echo "req       - Install requirements via PyPI."
+	@echo "lint      - Run code linters."
 	@echo "test      - Run pytest tests."
 	@echo "coverage  - Measure code coerage."
 	@echo "clean     - Remove cached artifacts."
+	@echo "validate  - Validate the SAM/CloudFormation template."
 	@echo "package   - Package the application for deployment. Requires env var: S3_BUCKET=deploy_bucket"
 	@echo "deploy    - Deploy the application to AWS Lambda."
 	@echo "publish   - test, clean, pacakge and deploy."
@@ -33,6 +35,7 @@ clean:
 	-find . -type d -name "__pycache__" | xargs rm -r
 
 validate:
+	cfn-lint template.yaml
 	sam validate
 
 build:

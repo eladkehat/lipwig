@@ -1,6 +1,8 @@
 -r requirements.txt
 
+# boto3 is part of the Lambda environment, so not installed separately in production
 boto3 ~= 1.7
+cfn-lint >= 0.17
 coverage >= 4.5
 flake8 >= 3.6
 mypy >= 0.670
